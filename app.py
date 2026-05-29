@@ -1,5 +1,24 @@
 import streamlit as st
 import pickle
+import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+
+nltk.download('stopwords', quiet=True)
+ps = PorterStemmer()
+
+def stemming(content):
+    stemmed_content = re.sub('[^a-zA-Z]', ' ', content)  
+    stemmed_content = stemmed_content.lower() 
+    stemmed_content = stemmed_content.split() 
+    stemmed_content = [
+        ps.stem(word) 
+        for word in stemmed_content 
+        if word not in stopwords.words('english')
+    ]
+    stemmed_content = ' '.join(stemmed_content)    
+    return stemmed_content
 
 # ---------------- PAGE CONFIG ---------------- #
 st.set_page_config(
@@ -118,7 +137,8 @@ if st.button("Analyze News"):
         st.warning("Please enter some news text.")
     else:
 
-        transformed_news = vectorizer.transform([news])
+        stemmed_news = stemming(news)
+        transformed_news = vectorizer.transform([stemmed_news])
 
         prediction = model.predict(transformed_news)
 
